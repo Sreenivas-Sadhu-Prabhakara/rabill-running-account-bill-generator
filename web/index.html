@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'">
+  <title>Running-account bill generator for civil contractors · Open MSME</title>
+  <meta name="description" content="Prepare a running-account bill from a bill of quantities and a measurement book: previous, present and up-to-date columns, retention, mobilisation-advance recovery and tax deducted at source, down to the net payable.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/accent.css">
+  <link rel="stylesheet" href="assets/layout.css">
+  <script src="assets/theme-init.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <span class="brand"><span class="dot"></span><b>Open MSME</b><span class="tag">RA bills</span></span>
+      <span class="sp"></span>
+      <a class="home" href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a>
+      <button class="themer" data-themer type="button">Theme</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="eyebrow">Construction · India &amp; the Philippines</div>
+        <h1>Running-account bill generator for civil contractors</h1>
+        <p class="lede">Keep the bill of quantities and the measurement book here, and every RA bill is the work done to date less everything certified in the bill before it — with retention, advance recovery and tax deducted at source worked out down to the net payable.</p>
+        <div class="who">
+          <span class="pill">Civil contractors, sub-contractors and PMCs</span>
+          <span class="pill reg">s.194C TDS · CGST s.51 · RA 9184 IRR · BIR RR 2-98</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <nav class="seg" id="tabs" aria-label="Sections">
+        <button type="button" data-panel="bill" aria-pressed="true">This bill</button>
+        <button type="button" data-panel="measure" aria-pressed="false">Measurements</button>
+        <button type="button" data-panel="items" aria-pressed="false">Bill of quantities</button>
+        <button type="button" data-panel="account" aria-pressed="false">Running account</button>
+        <button type="button" data-panel="contract" aria-pressed="false">Contract terms</button>
+      </nav>
+
+      <div class="note" id="banner" hidden></div>
+
+      <!-- This bill ------------------------------------------------------- -->
+      <div id="panel-bill">
+        <div class="cols calc">
+          <section class="card">
+            <h2 id="bill-heading">RA bill</h2>
+
+            <div class="result-primary">
+              <div class="k">Net payable on this bill</div>
+              <div class="v" id="b-net">&mdash;</div>
+              <div class="sub" id="b-net-words">&mdash;</div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="b-date">Bill date</label>
+                <div class="inp"><input type="date" id="b-date"></div>
+              </div>
+              <div class="field">
+                <label for="b-period-from">Period from</label>
+                <div class="inp"><input type="date" id="b-period-from"></div>
+              </div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="b-period-to">Period to</label>
+                <div class="inp"><input type="date" id="b-period-to"></div>
+              </div>
+              <div class="field">
+                <label for="b-other">Other recoveries to date <span class="hint">cumulative: water, power, plant hire, penalties</span></label>
+                <div class="inp has-pre">
+                  <span class="pre" id="b-other-sym">&#8377;</span>
+                  <input type="text" id="b-other" inputmode="decimal" autocomplete="off">
+                </div>
+              </div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="b-released">Retention released to date <span class="hint">cumulative</span></label>
+                <div class="inp has-pre">
+                  <span class="pre" id="b-released-sym">&#8377;</span>
+                  <input type="text" id="b-released" inputmode="decimal" autocomplete="off">
+                </div>
+              </div>
+              <div class="field">
+                <label for="b-note">Note on the bill</label>
+                <div class="inp"><input type="text" id="b-note" autocomplete="off" maxlength="200"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="check"><input type="checkbox" id="b-final"> <span>This is the <strong>final bill</strong> and closes the account</span></label>
+              <p class="hint" id="b-final-hint">A final bill recovers the whole balance of the mobilisation advance and starts the defect-liability clock on the retention still held.</p>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn primary" type="button" id="b-certify">Certify this bill</button>
+              <a class="btn ghost" id="b-print" href="print.html?no=open" target="_blank" rel="noopener">Printable bill</a>
+              <a class="btn ghost" id="b-csv" href="/api/bill.csv?no=open">Download CSV</a>
+            </div>
+            <p class="assumptions" id="b-saved"></p>
+          </section>
+
+          <section class="card">
+            <h2>Memorandum of payments</h2>
+            <div class="table-scroll">
+              <table class="breakdown money4">
+                <thead>
+                  <tr>
+                    <th>Line</th>
+                    <th class="num">Up to date</th>
+                    <th class="num">Previous</th>
+                    <th class="num">This bill</th>
+                  </tr>
+                </thead>
+                <tbody id="b-memo"></tbody>
+              </table>
+            </div>
+            <p class="assumptions" id="b-memo-note"></p>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>Account of work done</h2>
+          <p class="assumptions" id="b-items-empty">Nothing has been measured yet. Add the bill of quantities, then record measurements against it.</p>
+          <div class="table-scroll">
+            <table class="breakdown wide" id="b-items-table" hidden>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Description</th>
+                  <th>Unit</th>
+                  <th class="num">Rate</th>
+                  <th class="num">Qty previous</th>
+                  <th class="num">Qty this bill</th>
+                  <th class="num">Qty up to date</th>
+                  <th class="num">Amount previous</th>
+                  <th class="num">Amount this bill</th>
+                  <th class="num">Amount up to date</th>
+                </tr>
+              </thead>
+              <tbody id="b-items"></tbody>
+              <tfoot id="b-items-foot"></tfoot>
+            </table>
+          </div>
+        </section>
+
+        <section class="card" id="b-flags-card" hidden>
+          <h2>Before this bill goes to the client</h2>
+          <ul class="flags" id="b-flags"></ul>
+        </section>
+      </div>
+
+      <!-- Measurements: a measurement book is No. x L x B x D, and a blank
+           column is one that does not apply to the item. -->
+      <div id="panel-measure" hidden>
+        <div class="cols calc">
+          <section class="card">
+            <h2>Record a measurement</h2>
+            <div class="field">
+              <label for="m-item">Item measured</label>
+              <select id="m-item"></select>
+            </div>
+            <div class="field">
+              <label for="m-where">Where <span class="hint">the location, so the entry can be checked against the work</span></label>
+              <div class="inp"><input type="text" id="m-where" autocomplete="off" maxlength="160" placeholder="Footings F1 to F4, grid C2"></div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="m-page">Measurement-book page</label>
+                <div class="inp"><input type="text" id="m-page" autocomplete="off" maxlength="40" placeholder="MB 12 / 34"></div>
+              </div>
+              <div class="field">
+                <label for="m-date">Date measured</label>
+                <div class="inp"><input type="date" id="m-date"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Dimensions <span class="hint">leave a column blank where it does not apply</span></label>
+              <div class="dims">
+                <div class="dim">
+                  <label for="m-nos">Nos</label>
+                  <input type="text" id="m-nos" inputmode="decimal" autocomplete="off">
+                </div>
+                <div class="dim">
+                  <label for="m-length">Length</label>
+                  <input type="text" id="m-length" inputmode="decimal" autocomplete="off">
+                </div>
+                <div class="dim">
+                  <label for="m-breadth">Breadth</label>
+                  <input type="text" id="m-breadth" inputmode="decimal" autocomplete="off">
+                </div>
+                <div class="dim">
+                  <label for="m-depth">Depth</label>
+                  <input type="text" id="m-depth" inputmode="decimal" autocomplete="off">
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="check"><input type="checkbox" id="m-deduct"> <span>This entry is a <strong>deduction</strong> &mdash; an opening, a recess, or a correction</span></label>
+            </div>
+            <div class="field">
+              <label for="m-note">Note</label>
+              <div class="inp"><input type="text" id="m-note" autocomplete="off" maxlength="160"></div>
+            </div>
+
+            <div class="result-primary">
+              <div class="k">Quantity this entry adds</div>
+              <div class="v" id="m-preview">&mdash;</div>
+              <div class="sub" id="m-preview-sub">&mdash;</div>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn primary" type="button" id="m-add">Record the entry</button>
+              <a class="btn ghost" href="/api/measurements.csv">Download the book</a>
+            </div>
+            <div class="note" id="m-problem" hidden></div>
+          </section>
+
+          <section class="card">
+            <h2>Measured so far</h2>
+            <p class="assumptions" id="m-totals-empty">Nothing measured yet.</p>
+            <div class="table-scroll">
+              <table class="breakdown" id="m-totals-table" hidden>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th class="num">Billed</th>
+                    <th class="num">Measured</th>
+                    <th class="num">Contract</th>
+                  </tr>
+                </thead>
+                <tbody id="m-totals"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2 id="m-open-heading">In the bill being drawn up</h2>
+          <p class="assumptions" id="m-open-empty">No measurement has been recorded into this bill yet.</p>
+          <div class="table-scroll">
+            <table class="breakdown" id="m-open-table" hidden>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Where</th>
+                  <th>Dimensions</th>
+                  <th class="num">Quantity</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="m-open"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Already certified</h2>
+          <p class="assumptions">A certified measurement is never erased. A correction goes in as a fresh entry, marked as a deduction where it takes quantity back &mdash; which is what a measurement book does on paper.</p>
+          <div class="table-scroll">
+            <table class="breakdown" id="m-done-table" hidden>
+              <thead>
+                <tr>
+                  <th>Bill</th>
+                  <th>Item</th>
+                  <th>Where</th>
+                  <th>Dimensions</th>
+                  <th class="num">Quantity</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="m-done"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- Bill of quantities ---------------------------------------------- -->
+      <div id="panel-items" hidden>
+        <div class="cols calc">
+          <section class="card">
+            <h2 id="i-heading">Add an item</h2>
+            <div class="row2">
+              <div class="field">
+                <label for="i-code">Item number</label>
+                <div class="inp"><input type="text" id="i-code" autocomplete="off" maxlength="40" placeholder="2.1"></div>
+              </div>
+              <div class="field">
+                <label for="i-part">Sub-head <span class="hint">optional</span></label>
+                <div class="inp"><input type="text" id="i-part" autocomplete="off" maxlength="60" placeholder="Concrete"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="i-desc">Description of work</label>
+              <div class="inp"><input type="text" id="i-desc" autocomplete="off" maxlength="300"></div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="i-unit">Unit</label>
+                <div class="inp"><input type="text" id="i-unit" autocomplete="off" maxlength="16" placeholder="cum" list="units"></div>
+                <datalist id="units">
+                  <option value="cum"></option><option value="sqm"></option><option value="m"></option>
+                  <option value="kg"></option><option value="MT"></option><option value="nos"></option>
+                  <option value="litre"></option><option value="quintal"></option><option value="cu.m"></option>
+                  <option value="sq.m"></option><option value="l.m"></option><option value="bags"></option>
+                </datalist>
+              </div>
+              <div class="field">
+                <label for="i-qty">Contract quantity <span class="hint">blank for a provisional item</span></label>
+                <div class="inp"><input type="text" id="i-qty" inputmode="decimal" autocomplete="off"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="i-rate">Rate per unit</label>
+              <div class="inp has-pre">
+                <span class="pre" id="i-rate-sym">&#8377;</span>
+                <input type="text" id="i-rate" inputmode="decimal" autocomplete="off">
+              </div>
+            </div>
+            <div class="field">
+              <label class="check"><input type="checkbox" id="i-extra"> <span>An <strong>extra item</strong> the contract never priced</span></label>
+              <p class="hint">An extra item is billed, but flagged: its rate needs the client's approval in writing.</p>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn primary" type="button" id="i-save">Add the item</button>
+              <button class="btn ghost" type="button" id="i-cancel" hidden>Cancel</button>
+            </div>
+            <div class="note" id="i-problem" hidden></div>
+          </section>
+
+          <section class="card">
+            <h2>Bring in a bill of quantities</h2>
+            <p class="assumptions">A CSV file exported from a spreadsheet. The first row names the columns &mdash; item number, description, unit, contract quantity and rate, in any order and under whatever headings the spreadsheet uses. Rates may carry currency signs and lakh commas. Every row that cannot be used is reported by its line, and the rest still come in.</p>
+            <div class="field">
+              <label for="i-file">Choose a CSV file</label>
+              <input type="file" id="i-file" accept=".csv,text/csv">
+            </div>
+            <div class="btnrow">
+              <button class="btn primary" type="button" id="i-import">Bring it in</button>
+              <a class="btn ghost" href="/api/boq-template.csv">Blank template</a>
+              <a class="btn ghost" href="/api/boq.csv">Export what is here</a>
+            </div>
+            <div class="note" id="i-import-result" hidden></div>
+
+            <table class="breakdown total-only">
+              <tbody>
+                <tr><td>Items</td><td class="num" id="i-count">&mdash;</td></tr>
+                <tr><td>Total of the bill of quantities</td><td class="num" id="i-total">&mdash;</td></tr>
+                <tr class="total"><td>Contract value used</td><td class="num" id="i-contract">&mdash;</td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>The bill of quantities</h2>
+          <p class="assumptions" id="i-empty">No items yet.</p>
+          <div class="table-scroll">
+            <table class="breakdown wide" id="i-table" hidden>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Description</th>
+                  <th>Unit</th>
+                  <th class="num">Contract qty</th>
+                  <th class="num">Rate</th>
+                  <th class="num">Contract amount</th>
+                  <th class="num">Measured</th>
+                  <th class="num">Billed</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="i-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- Running account -------------------------------------------------- -->
+      <div id="panel-account" hidden>
+        <section class="card">
+          <h2>Does the account add up?</h2>
+          <p class="assumptions">Every bill claims the work done to date less everything the previous bill was certified at. So the bills of this contract, added together, must come to exactly the figures the last bill stands at &mdash; on every line, to the last paise. This is that check.</p>
+          <div class="result-primary">
+            <div class="k">The bills added together, against the account</div>
+            <div class="v" id="r-verdict">&mdash;</div>
+            <div class="sub" id="r-sub">&mdash;</div>
+          </div>
+          <div class="table-scroll">
+            <table class="breakdown" id="r-table" hidden>
+              <thead>
+                <tr>
+                  <th>Line</th>
+                  <th class="num">Bills added together</th>
+                  <th class="num">Account up to date</th>
+                </tr>
+              </thead>
+              <tbody id="r-rows"></tbody>
+            </table>
+          </div>
+          <div class="note" id="r-differences" hidden></div>
+        </section>
+
+        <section class="card">
+          <h2>Bills certified</h2>
+          <p class="assumptions" id="a-empty">No bill has been certified yet.</p>
+          <div class="table-scroll">
+            <table class="breakdown wide" id="a-table" hidden>
+              <thead>
+                <tr>
+                  <th>Bill</th>
+                  <th>Date</th>
+                  <th>Period</th>
+                  <th class="num">Work this bill</th>
+                  <th class="num">Work up to date</th>
+                  <th class="num">Net payable</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="a-rows"></tbody>
+            </table>
+          </div>
+          <div class="btnrow">
+            <button class="btn ghost" type="button" id="a-reopen" hidden>Reopen the last bill</button>
+          </div>
+          <p class="assumptions">Only the last bill can be reopened, because every bill after it subtracts its figures. Reopening puts its measurements back into the bill being drawn up.</p>
+        </section>
+
+        <section class="card">
+          <h2>Item by item, across the whole account</h2>
+          <p class="assumptions" id="r-items-empty">Nothing certified yet.</p>
+          <div class="table-scroll">
+            <table class="breakdown wide" id="r-items-table" hidden>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Description</th>
+                  <th>Unit</th>
+                  <th class="num">Claimed across the bills</th>
+                  <th class="num">Measured up to date</th>
+                  <th class="num">In bills</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="r-items"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- Contract terms --------------------------------------------------- -->
+      <div id="panel-contract" hidden>
+        <div class="cols calc">
+          <section class="card">
+            <h2>The contract</h2>
+            <div class="field">
+              <label for="c-work">Name of work</label>
+              <div class="inp"><input type="text" id="c-work" autocomplete="off" maxlength="200"></div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="c-client">Client / employer</label>
+                <div class="inp"><input type="text" id="c-client" autocomplete="off" maxlength="160"></div>
+              </div>
+              <div class="field">
+                <label for="c-contractor">Contractor</label>
+                <div class="inp"><input type="text" id="c-contractor" autocomplete="off" maxlength="160"></div>
+              </div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="c-agreement">Agreement number</label>
+                <div class="inp"><input type="text" id="c-agreement" autocomplete="off" maxlength="80"></div>
+              </div>
+              <div class="field">
+                <label for="c-order">Work-order number</label>
+                <div class="inp"><input type="text" id="c-order" autocomplete="off" maxlength="80"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="c-site">Site</label>
+              <div class="inp"><input type="text" id="c-site" autocomplete="off" maxlength="200"></div>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="c-started">Started on</label>
+                <div class="inp"><input type="date" id="c-started"></div>
+              </div>
+              <div class="field">
+                <label for="c-due">Due for completion</label>
+                <div class="inp"><input type="date" id="c-due"></div>
+              </div>
+            </div>
+            <div class="btnrow">
+              <button class="btn primary" type="button" id="c-save-project">Save the contract</button>
+            </div>
+            <div class="note" id="c-project-problem" hidden></div>
+          </section>
+
+          <section class="card">
+            <h2>Deductions and recoveries</h2>
+            <div class="note">Every figure below is <strong>indicative</strong>: it is the rate most often written into a small civil contract, not a rate this tool knows applies to yours. <strong>The contract agreement governs</strong> &mdash; read it, and the current tax law, and change anything that differs. The hint under each field says where the default came from.</div>
+
+            <div class="field">
+              <label for="c-market">Market</label>
+              <select id="c-market">
+                <option value="IN">India &mdash; rupees</option>
+                <option value="PH">Philippines &mdash; pesos</option>
+              </select>
+              <p class="hint" id="c-market-hint"></p>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="c-contract-value">Contract value <span class="hint">blank uses the bill of quantities</span></label>
+                <div class="inp has-pre"><span class="pre" id="c-cv-sym">&#8377;</span><input type="text" id="c-contract-value" inputmode="decimal" autocomplete="off"></div>
+              </div>
+              <div class="field">
+                <label for="c-advance">Mobilisation advance paid</label>
+                <div class="inp has-pre"><span class="pre" id="c-adv-sym">&#8377;</span><input type="text" id="c-advance" inputmode="decimal" autocomplete="off"></div>
+                <p class="hint" id="c-advance-hint"></p>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="c-retention">Retention / security</label>
+                <div class="inp has-suf"><input type="text" id="c-retention" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+                <p class="hint" id="c-retention-hint"></p>
+              </div>
+              <div class="field">
+                <label for="c-retention-cap">Retention ceiling <span class="hint">of the contract value; 0 for none</span></label>
+                <div class="inp has-suf"><input type="text" id="c-retention-cap" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="c-dlp">Defect-liability period</label>
+                <div class="inp has-suf"><input type="number" id="c-dlp" min="0" step="1" inputmode="numeric"><span class="suf">months</span></div>
+                <p class="hint" id="c-dlp-hint"></p>
+              </div>
+              <div class="field">
+                <label for="c-payment-days">Payment period after certification</label>
+                <div class="inp has-suf"><input type="number" id="c-payment-days" min="0" step="1" inputmode="numeric"><span class="suf">days</span></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="c-recovery-method">How the advance is recovered</label>
+              <select id="c-recovery-method">
+                <option value="percent-of-value">A share of each bill's value of work</option>
+                <option value="pro-rata">Pro rata, between two points of progress</option>
+              </select>
+            </div>
+            <div class="field" id="c-recovery-pct-field">
+              <label for="c-recovery-pct">Recovered from each bill</label>
+              <div class="inp has-suf"><input type="text" id="c-recovery-pct" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+              <p class="hint" id="c-recovery-hint"></p>
+            </div>
+            <div class="row2" id="c-recovery-span" hidden>
+              <div class="field">
+                <label for="c-recovery-start">Recovery begins at progress of</label>
+                <div class="inp has-suf"><input type="text" id="c-recovery-start" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+              </div>
+              <div class="field">
+                <label for="c-recovery-end">and finishes at</label>
+                <div class="inp has-suf"><input type="text" id="c-recovery-end" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label for="c-supply-tax">Tax charged on the work <span class="hint">0 if the client pays it directly</span></label>
+                <div class="inp has-suf"><input type="text" id="c-supply-tax" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+                <p class="hint" id="c-supply-tax-hint"></p>
+              </div>
+              <div class="field">
+                <label for="c-income-tds">Income tax deducted at source</label>
+                <div class="inp has-suf"><input type="text" id="c-income-tds" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+                <p class="hint" id="c-income-tds-hint"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="c-tds-base">Income tax is deducted on</label>
+              <select id="c-tds-base">
+                <option value="value-of-work">The value of work done in the bill</option>
+                <option value="value-less-advance-recovery">The value of work less the advance recovered</option>
+              </select>
+              <p class="hint">The usual treatment is the whole value of work certified. The second applies where tax was already deducted when the advance was paid, so deducting again on the part being recouped would deduct twice. Which one applies is for the deductor and the contract to settle, not for this tool.</p>
+            </div>
+
+            <div class="field">
+              <label class="check"><input type="checkbox" id="c-supply-tds-applies"> <span>The client deducts out of the tax on the work</span></label>
+              <p class="hint" id="c-supply-tds-hint"></p>
+            </div>
+            <div class="field" id="c-supply-tds-field" hidden>
+              <label for="c-supply-tds">Deducted out of the tax on the work</label>
+              <div class="inp has-suf"><input type="text" id="c-supply-tds" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+            </div>
+
+            <div class="field">
+              <label for="c-variation">Deviation limit before a variation order is needed</label>
+              <div class="inp has-suf"><input type="text" id="c-variation" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+              <p class="hint" id="c-variation-hint"></p>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn primary" type="button" id="c-save-terms">Save the terms</button>
+              <button class="btn ghost" type="button" id="c-reset-terms">Back to the indicative defaults</button>
+            </div>
+            <div class="note" id="c-terms-problem" hidden></div>
+
+            <details class="assumptions">
+              <summary>The statutory figures this build carries</summary>
+              <table class="breakdown">
+                <tbody id="c-statutory"></tbody>
+              </table>
+              <p>Confirm each against the Act, the Rules and the current notifications, or with your own tax adviser, before you rely on it. They change.</p>
+            </details>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>Where this contract is kept</h2>
+          <p class="assumptions">One file on this machine, written whole every time something changes. Nothing is sent anywhere, and this tool makes no outbound network calls of any kind. It prepares a bill for you to submit yourself.</p>
+          <pre id="c-file">&mdash;</pre>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span>Open MSME &middot; open-source tool for MSMEs in India &amp; the Philippines &middot; MIT</span>
+      <span><a href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a></span>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+/* The printable bill.
+
+   This page is a document, not an interface: it has to read the same on paper
+   as on screen, survive being photocopied, and fit the columns a bill is read
+   across. It borrows the kit's colours and type so that it still belongs to the
+   tool, and then lays itself out as a form. */
+
+body.sheet { background: var(--surface-2); }
+body.sheet .wrap { max-width: 1040px; padding: 0 16px 60px; }
+
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 18px 0; }
+.toolbar .themer { margin-left: auto; }
+
+article {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 30px 32px 36px;
+  box-shadow: var(--shadow);
+}
+@media (max-width: 560px) { article { padding: 20px 16px 26px; } }
+
+/* The heading block. */
+.billhead { border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 20px; }
+.billhead h1 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; }
+.billhead .work { margin: 0 0 14px; font-size: 1rem; font-weight: 600; color: var(--ink-2); }
+
+table.meta { border-collapse: collapse; width: 100%; font-size: .84rem; }
+table.meta td { padding: 2px 10px 2px 0; vertical-align: top; color: var(--ink-2); }
+table.meta td.k { width: 1%; white-space: nowrap; color: var(--ink-3); }
+table.meta td.v { font-weight: 600; color: var(--ink); }
+
+section { margin: 26px 0; }
+section h2 {
+  margin: 0 0 10px; font-size: .95rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--tool-text);
+}
+
+/* The account tables. A bill is read across, so every number column is tabular
+   and nothing wraps except the description. */
+table.acct { width: 100%; border-collapse: collapse; font-size: .8rem; }
+table.acct th, table.acct td {
+  border: 1px solid var(--line-2); padding: 5px 7px; text-align: left; vertical-align: top;
+}
+table.acct thead th {
+  background: var(--surface-2); font-weight: 700; font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .03em; color: var(--ink-2);
+}
+table.acct th.num, table.acct td.num {
+  text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+table.acct th.group { text-align: center; }
+table.acct td.c-no, table.acct th.c-no { white-space: nowrap; }
+table.acct td.c-unit, table.acct th.c-unit { white-space: nowrap; }
+table.acct tbody tr.part td { background: var(--surface-2); font-weight: 700; }
+table.acct tbody tr.carried td { color: var(--ink-3); }
+table.acct tfoot td { font-weight: 700; background: var(--surface-2); }
+table.acct td.neg { color: var(--bad); }
+table.acct tr.rule td { border-top: 2px solid var(--line-2); font-weight: 700; }
+table.acct tr.net td { border-top: 2px solid var(--ink); font-weight: 800; }
+table.acct.memo td:first-child { width: 55%; }
+table.acct.rates td:first-child { width: 60%; }
+
+/* The bill overflows a phone screen; let it scroll in place rather than
+   stretching the page, and print it in full. */
+section { overflow-x: auto; }
+
+/* The figure the bill is certified for. */
+.netbox {
+  margin-top: 16px; border: 2px solid var(--ink); border-radius: 6px; padding: 12px 16px;
+  background: var(--surface-2);
+}
+.netbox .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+.netbox .v { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.netbox .words { font-size: .85rem; font-style: italic; color: var(--ink-2); margin-top: 2px; }
+
+.meta-note { font-size: .78rem; color: var(--ink-3); margin: 8px 0 0; }
+
+ul.plain { margin: 0; padding-left: 18px; font-size: .82rem; color: var(--ink-2); }
+ul.plain li { margin: 4px 0; }
+
+/* The measurement sheets, one small table per item. */
+.sheet-item { margin: 0 0 16px; }
+.sheet-item h3 { margin: 0 0 5px; font-size: .84rem; font-weight: 700; }
+.sheet-item h3 .code { font-family: var(--mono); color: var(--ink-3); margin-right: 7px; }
+
+/* Signature blocks, three across and stacking on a phone. */
+.signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 40px; overflow: visible; }
+@media (max-width: 640px) { .signatures { grid-template-columns: 1fr; gap: 34px; } }
+.sig .line { border-top: 1px solid var(--ink-2); margin-bottom: 6px; }
+.sig .who { font-size: .78rem; color: var(--ink-2); }
+.sig .when { font-size: .74rem; color: var(--ink-3); margin-top: 16px; border-top: 1px dotted var(--line-2); padding-top: 3px; }
+
+.billfoot { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 12px; }
+.billfoot p { margin: 0; font-size: .74rem; color: var(--ink-3); }
+
+/* On paper: no chrome, no shadow, no page background, and tables that break
+   across pages without losing their headings. */
+@media print {
+  body.sheet { background: #fff; }
+  body.sheet .wrap { max-width: none; padding: 0; }
+  .screen-only { display: none !important; }
+  article { border: none; box-shadow: none; padding: 0; border-radius: 0; }
+  section { overflow: visible; }
+  table.acct { font-size: 8.5pt; }
+  table.acct thead { display: table-header-group; }
+  table.acct tr { break-inside: avoid; }
+  section, .sheet-item, .signatures { break-inside: avoid; }
+  .signatures { margin-top: 28px; }
+  h2 { break-after: avoid; }
+}

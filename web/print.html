@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'">
+  <title>Running-account bill for signature · Open MSME</title>
+  <meta name="description" content="The running-account bill laid out for printing: the account of work done in previous, present and up-to-date columns, the memorandum of payments, the measurements behind the quantities, and the signature blocks.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/accent.css">
+  <link rel="stylesheet" href="assets/print.css">
+  <script src="assets/theme-init.js"></script>
+</head>
+<body class="sheet">
+  <div class="wrap">
+    <div class="screen-only toolbar">
+      <a class="btn ghost" href="index.html">Back to the tool</a>
+      <button class="btn primary" type="button" id="p-print">Print this bill</button>
+      <a class="btn ghost" id="p-csv" href="/api/bill.csv?no=open">Download as CSV</a>
+      <button class="themer" data-themer type="button">Theme</button>
+    </div>
+
+    <div class="note screen-only" id="p-problem" hidden></div>
+
+    <article id="p-bill" hidden>
+      <header class="billhead">
+        <h1 id="p-title">Running-account bill</h1>
+        <p class="work" id="p-work"></p>
+        <table class="meta">
+          <tbody id="p-meta"></tbody>
+        </table>
+      </header>
+
+      <section>
+        <h2>Part I &mdash; Account of work done</h2>
+        <table class="acct" id="p-items-table">
+          <thead>
+            <tr>
+              <th rowspan="2" class="c-no">Item</th>
+              <th rowspan="2">Description of work</th>
+              <th rowspan="2" class="c-unit">Unit</th>
+              <th rowspan="2" class="num c-rate">Rate</th>
+              <th colspan="3" class="num group">Quantity</th>
+              <th colspan="3" class="num group">Amount</th>
+            </tr>
+            <tr>
+              <th class="num">Previous bill</th>
+              <th class="num">This bill</th>
+              <th class="num">Up to date</th>
+              <th class="num">Previous bill</th>
+              <th class="num">This bill</th>
+              <th class="num">Up to date</th>
+            </tr>
+          </thead>
+          <tbody id="p-items"></tbody>
+          <tfoot id="p-items-foot"></tfoot>
+        </table>
+      </section>
+
+      <section>
+        <h2>Part II &mdash; Memorandum of payments</h2>
+        <table class="acct memo">
+          <thead>
+            <tr>
+              <th>Line</th>
+              <th class="num">Up to date</th>
+              <th class="num">Previous bill</th>
+              <th class="num">This bill</th>
+            </tr>
+          </thead>
+          <tbody id="p-memo"></tbody>
+        </table>
+
+        <div class="netbox">
+          <div class="k">Net payable on this bill</div>
+          <div class="v" id="p-net"></div>
+          <div class="words" id="p-words"></div>
+        </div>
+        <p class="meta-note" id="p-dues"></p>
+      </section>
+
+      <section id="p-sheets-section" hidden>
+        <h2>Part III &mdash; Measurements taken into this bill</h2>
+        <p class="meta-note">The working behind the quantities claimed above, as recorded in the measurement book. A column left blank is one that does not apply to the item.</p>
+        <div id="p-sheets"></div>
+      </section>
+
+      <section id="p-flags-section" hidden>
+        <h2>Matters for the certifying officer</h2>
+        <ul class="plain" id="p-flags"></ul>
+      </section>
+
+      <section>
+        <h2>Deductions applied to this bill</h2>
+        <table class="acct rates">
+          <tbody id="p-rates"></tbody>
+        </table>
+        <p class="meta-note" id="p-rates-note"></p>
+      </section>
+
+      <section class="signatures">
+        <div class="sig">
+          <div class="line"></div>
+          <div class="who">Measured and submitted by<br><span id="p-sig-contractor">the contractor</span></div>
+          <div class="when">Date</div>
+        </div>
+        <div class="sig">
+          <div class="line"></div>
+          <div class="who">Checked by<br>Site engineer</div>
+          <div class="when">Date</div>
+        </div>
+        <div class="sig">
+          <div class="line"></div>
+          <div class="who">Certified for payment by<br><span id="p-sig-client">the client</span></div>
+          <div class="when">Date</div>
+        </div>
+      </section>
+
+      <footer class="billfoot">
+        <p id="p-foot"></p>
+      </footer>
+    </article>
+  </div>
+
+  <script src="assets/print.js"></script>
+</body>
+</html>

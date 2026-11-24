@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'">
+  <title>Running-account bill generator for civil contractors · Open MSME</title>
+  <meta name="description" content="A free single-binary tool for civil contractors in India and the Philippines: keep the bill of quantities and the measurement book, and get an RA bill with previous, present and up-to-date columns, retention, mobilisation-advance recovery and tax deducted at source, down to the net payable.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:title" content="Running-account bill generator for civil contractors · Open MSME">
+  <meta property="og:description" content="Cumulative RA-bill arithmetic done properly: work done to date less everything certified before, with retention, advance recovery and TDS — one offline binary, your data stays on your machine.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/accent.css">
+  <script src="assets/theme-init.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">
+        <span class="dot"></span><b>Open MSME</b><span class="tag">RA bills</span>
+      </a>
+      <span class="sp"></span>
+      <a class="home" href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a>
+      <button class="themer" data-themer type="button">Theme</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div class="eyebrow">Construction · India &amp; the Philippines</div>
+        <h1>Running-account bill generator for civil contractors</h1>
+        <p class="lede">A running-account bill is cumulative: it states the work done to date and claims that, less everything certified in the bill before it. Get the subtraction wrong and you either pay for the same concrete twice or lose an item out of the account. This tool keeps the bill of quantities and the measurement book, does that arithmetic exactly, applies retention, mobilisation-advance recovery and tax deducted at source, and hands you a printable bill to submit yourself.</p>
+        <div class="who">
+          <span class="pill">Civil contractors, sub-contractors and PMCs</span>
+          <span class="pill reg">Income-tax Act s.194C &middot; CGST s.51 &middot; RA 9184 IRR &middot; BIR RR 2-98</span>
+          <span class="pill">Runs offline &middot; one binary</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <section class="prose">
+        <h2>What it does</h2>
+        <p>Progress billing on a construction contract is not a sequence of invoices. It is one account, re-stated every month. Each RA bill carries, for every item, the quantity and the value <strong>up to date</strong>; beside them, what the <strong>previous bill</strong> was certified at; and in the third column the difference, which is what this bill asks for. The deductions work the same way: retention is a share of all the work done so far, less the retention already held; advance recovery is the running total recouped, less what was recouped before.</p>
+        <p>Spreadsheets get this wrong in a handful of predictable ways, and this tool is built around not getting them wrong:</p>
+        <ul>
+          <li><strong>The claim is worked out as a difference, never as a product.</strong> What a bill claims for an item is its value up to date less the value the previous bill was certified at &mdash; not the quantity measured this month at the rate. Those two differ by the rounding on every earlier bill, and by any rate corrected since. One of them reconciles; the other drifts.</li>
+          <li><strong>An item that has ever been billed is in every later bill.</strong> If the measurement book says nothing about it this time, it stands at the previous figures and claims nothing. It cannot fall out of a sheet unnoticed.</li>
+          <li><strong>A quantity revised downwards is a minus quantity, not a deletion.</strong> Re-measure a footing and find it 0.42 m deep instead of 0.45, and the bill carries the correction as a negative line that gives back the value, the retention held on it and the tax deducted on it.</li>
+          <li><strong>Nothing is paid twice.</strong> Draw a bill up again before anything further is measured and it claims zero, because the previous bill's frozen figures are what it subtracts.</li>
+          <li><strong>Retention and advance recovery cannot overshoot.</strong> Both are worked out from the cumulative value and held to their ceilings, so they cannot creep past the advance actually paid or the retention ceiling the contract sets.</li>
+        </ul>
+        <p>Then it checks itself. The <strong>reconciliation</strong> adds every bill's claim up and sets it against the account: value of work, tax, retention, recovery, deduction at source, net payable, and the same item by item. They have to agree exactly, to the last paise. If they ever do not, the tool says so and names the line, rather than letting a figure go to a client.</p>
+
+        <h2>Who it's for</h2>
+        <p>The contractor or sub-contractor who bills a client progressively: small civil contractors, interior and finishing contractors, road and drainage contractors, electrical and plumbing sub-contractors, and the project-management consultant checking what arrives. It suits whoever <em>prepares</em> the bill &mdash; the party who has to produce the measurements and the arithmetic behind the claim.</p>
+        <p>It assumes a contract with a bill of quantities, rates per unit, and measurements taken on site. It needs no accounting system, no spreadsheet licence and no internet connection.</p>
+
+        <h2>The rule it implements</h2>
+        <p>The <em>arithmetic</em> of a running account is a contract convention rather than a statute, and it is the same in both markets: work done to date, less work certified before. What the law sets is the <strong>deductions</strong>, and those differ.</p>
+
+        <h3>India</h3>
+        <ul>
+          <li><strong>Section 194C of the Income-tax Act, 1961</strong> requires tax to be deducted from a payment to a contractor at <strong>1%</strong> where the payee is an individual or a Hindu undivided family and <strong>2%</strong> otherwise. <strong>Section 206AA</strong> raises it to <strong>20%</strong> where the payee has furnished no PAN. The thresholds in section 194C(5) are a single payment above <strong>&#8377;30,000</strong> or <strong>&#8377;1,00,000</strong> in aggregate during a financial year.</li>
+          <li><strong>Section 51 of the CGST Act, 2017</strong> requires a specified deductor &mdash; a government department, a local authority and the other persons notified &mdash; to deduct <strong>2%</strong> (1% CGST + 1% SGST, or 2% IGST) from payments under a contract whose total value exceeds <strong>&#8377;2,50,000</strong>. It is deducted on the value of the supply, excluding the GST charged on it.</li>
+          <li>A works contract is a supply of service. The rate most commonly charged to a non-government client is <strong>18% GST</strong>; concessional rates apply to some government and affordable-housing work.</li>
+          <li><strong>Retention and defect liability</strong> are contract terms, not statutory ones. A CPWD-style agreement commonly withholds <strong>5%</strong> of the value of work done to a ceiling of <strong>5%</strong> of the contract value, released after a <strong>12-month</strong> defect-liability period; <strong>10%</strong> appears too. A <strong>mobilisation advance</strong> of about <strong>10%</strong> of the contract value, against a bank guarantee, is recovered out of the bills.</li>
+        </ul>
+
+        <h3>Philippines</h3>
+        <ul>
+          <li><strong>Section 62.1 of the Revised IRR of Republic Act 9184</strong>, the Government Procurement Reform Act, provides for <strong>retention money of 10%</strong> of every progress payment, building up to <strong>10% of the total contract price</strong>, on government infrastructure contracts.</li>
+          <li><strong>Section 88.2.1 of the Revised IRR</strong> allows an <strong>advance payment of up to 15%</strong> of the total contract price, recouped by deduction from the progress payments.</li>
+          <li><strong>Section 162.1 of the Revised IRR</strong> limits a variation order to <strong>10%</strong> of the original contract cost, which is also a sensible point at which to stop and get a deviation in writing.</li>
+          <li><strong>Revenue Regulations 2-98 as amended</strong> make <strong>expanded withholding tax of 2%</strong> deductible by the payor from income payments to contractors.</li>
+          <li><strong>Section 108 of the National Internal Revenue Code</strong> as amended charges <strong>12% VAT</strong> on the sale of services, and <strong>section 114(C)</strong> has a government payor withhold a further <strong>5%</strong> of the gross payment as creditable withholding VAT.</li>
+        </ul>
+
+        <p>Every one of those figures is a <strong>named constant in one place</strong> in the source &mdash; a single block in <code>internal/rabill/terms.go</code> &mdash; and every one is editable under <strong>Contract terms</strong>. They are <strong>indicative defaults</strong>: the rates most often written into a small civil contract, not rates this tool knows apply to yours. <strong>The contract agreement governs.</strong> The tool says so on the page beside each field, and prints it as a footnote on the bill, and tells you on the bill itself while the rates are still the ones it shipped with.</p>
+
+        <h2>Install &amp; run</h2>
+        <p>One binary, the Go standard library and nothing else &mdash; no database to install, no packages to fetch, no build step for the interface.</p>
+<pre># build it
+git clone https://github.com/sreenivas-sadhu-prabhakara/rabill-running-account-bill-generator.git
+cd rabill-running-account-bill-generator
+go build -o rabill .
+
+# run it, then open http://127.0.0.1:8080 in a browser
+./rabill
+
+# or run it straight from the source
+go run .
+
+# another port, and one file per contract
+./rabill -addr 127.0.0.1:9000 -data ~/contracts/office-block-plot-14.json</pre>
+        <p>It serves the interface on <code>127.0.0.1</code> &mdash; the machine it is running on, not the network &mdash; and keeps the contract in <code>./rabill-data.json</code> unless you point <code>-data</code> somewhere else. One file holds one contract, so run a second copy on another port for another job. Stop it with Ctrl-C.</p>
+
+        <h2>How it goes in practice</h2>
+        <ol class="steps">
+          <li>Enter the contract once under <strong>Contract terms</strong>: name of work, client, agreement number, contract value, the advance paid, and the retention, recovery and deduction rates your agreement actually says.</li>
+          <li>Bring in the <strong>bill of quantities</strong>. Export it from the spreadsheet you have as CSV and the tool reads the columns under whatever headings they carry, in any order, with rupee signs and lakh commas in the rates. Bad rows are reported by line; the good ones still come in.</li>
+          <li>Record <strong>measurements</strong> as the work is measured: item, where, and <code>nos &times; L &times; B &times; D</code>, leaving blank any column that does not apply to the item. Openings and corrections go in as deduction entries.</li>
+          <li>Read the bill. The three columns are there, the memorandum of payments reads down to the net payable, and the list of things to settle before it goes out &mdash; an extra item with no agreed rate, a quantity past the deviation limit, a minus quantity &mdash; is above the signature blocks.</li>
+          <li><strong>Certify</strong> it. The bill freezes at exactly the figures on screen, its measurements are taken up into it, and the next bill starts subtracting them. The last bill can be reopened if something needs correcting before it goes out.</li>
+          <li>Open the <strong>printable bill</strong>, print it, sign it, and submit it to your client yourself. The tool sends nothing anywhere.</li>
+        </ol>
+
+        <h2>What it stores</h2>
+        <p>One JSON file on your own machine &mdash; the contract, the bill of quantities, the measurement book and every certified bill. Nothing else, nowhere else:</p>
+        <ul>
+          <li><strong>No outbound network calls.</strong> Not for fonts, not for analytics, not for updates. The interface is built into the binary and served from it. The process opens one listening socket on <code>127.0.0.1</code> and nothing else.</li>
+          <li><strong>It submits nothing.</strong> This prepares a bill for you to print and hand over. It has no connection to any client portal, any bank or any tax authority, and it does not email anything.</li>
+          <li><strong>Written whole, atomically.</strong> Every change writes a temporary file beside the contract and renames it over the old one, so an interrupted save leaves the previous contract intact, never half of one. The file is written readable only by you.</li>
+          <li><strong>Yours to read.</strong> It is plain, indented JSON with amounts written as decimals, and the bill of quantities exports back to CSV that imports unchanged &mdash; so you are never locked in.</li>
+          <li><strong>Checked on the way in.</strong> If the bills in the file do not form a running account &mdash; a gap in the numbering, a bill whose claim is not its own figures less the previous bill's &mdash; the tool refuses to start and says which, rather than carrying on from figures that do not add up.</li>
+        </ul>
+
+        <h2>Features</h2>
+        <div class="featgrid">
+          <div class="feat">
+            <h3>Three columns, done right</h3>
+            <p>Previous bill, this bill, up to date &mdash; for every item's quantity and value, and for every line of the memorandum of payments. The middle column is always the difference of the other two.</p>
+          </div>
+          <div class="feat">
+            <h3>Measurement-book entry</h3>
+            <p><code>nos &times; L &times; B &times; D</code>, with a blank column meaning "does not apply" rather than zero: a wall is measured by four columns, a plinth beam by three, a door by number alone. Openings deduct. Quantities to three decimals, the way the book is written.</p>
+          </div>
+          <div class="feat">
+            <h3>The account adds up, provably</h3>
+            <p>Every bill's claim added together must equal the last bill's cumulative figures, exactly, on every line and every item. The tool runs that check and shows you the answer, and refuses to certify a bill that would break it.</p>
+          </div>
+          <div class="feat">
+            <h3>Exact money, no drift</h3>
+            <p>Amounts are whole paise or centavos, quantities whole thousandths, rates whole hundredths of a percent. Every multiplication runs on a 128-bit intermediate. There is no floating point anywhere in the arithmetic, so there is nothing to argue about on site.</p>
+          </div>
+          <div class="feat">
+            <h3>Retention with a ceiling</h3>
+            <p>A share of the work done, held to a share of the contract value, with a release recorded against the completion certificate and the balance dated to the end of the defect-liability period &mdash; counted in calendar months, month-ends and leap years included.</p>
+          </div>
+          <div class="feat">
+            <h3>Advance recovery two ways</h3>
+            <p>A fixed share of each bill, or pro rata between two points of progress. Either way it is worked out from the cumulative value, so it cannot overshoot the advance paid &mdash; and a final bill recovers whatever is left.</p>
+          </div>
+          <div class="feat">
+            <h3>Deductions at source</h3>
+            <p>Income-tax deduction on the value of work, or on the value less the advance being recouped where tax was already deducted when the advance was paid. Deduction out of the tax on the supply is off until you say the client makes one.</p>
+          </div>
+          <div class="feat">
+            <h3>Deviations caught early</h3>
+            <p>An item measured past its contract quantity is flagged with the excess and the percentage; past the deviation limit it is marked as needing a written variation order. An extra item the contract never priced is billed and flagged for the client's approval in writing.</p>
+          </div>
+          <div class="feat">
+            <h3>A bill you can hand over</h3>
+            <p>A printable bill with the heading, Part I account of work done, Part II memorandum of payments, Part III the measurements behind the quantities, the amount in words, the deduction rates as a footnote, and three signature blocks.</p>
+          </div>
+          <div class="feat">
+            <h3>Amount in words, grouped right</h3>
+            <p>India reads &#8377;10,00,000 as ten lakh; the Philippines reads &#8377;1,000,000 as one million. The bill writes it the way its market writes it, in rupees and paise or pesos and centavos.</p>
+          </div>
+          <div class="feat">
+            <h3>CSV in, CSV out</h3>
+            <p>Bring the bill of quantities in from a spreadsheet, and take any bill, the whole bill of quantities or the entire measurement book back out as CSV for the client's own checking.</p>
+          </div>
+          <div class="feat">
+            <h3>A measurement book, not a database</h3>
+            <p>A certified measurement is never erased. A correction is a fresh entry, marked as a deduction where it takes quantity back &mdash; which is what a measurement book does on paper, and what makes a bill defensible.</p>
+          </div>
+        </div>
+
+        <h2>Assumptions</h2>
+        <details class="assumptions" open>
+          <summary>What the tool assumes, and what it leaves to you</summary>
+          <p><strong>Every deduction rate is indicative.</strong> Retention, its ceiling, the defect-liability period, the advance and its recovery, the tax charged on the work, the deduction at source and the deviation limit all start at the figure most often written into a small civil contract in your market. <strong>The contract agreement governs</strong>, then the work order, then the tax law in force. Change anything that differs before you prepare a bill. While the rates are still the shipped defaults, the tool says so on the bill.</p>
+          <p><strong>Quantities</strong> are held to three decimal places, which is what a measurement book is written to. Each measurement entry is worked out from its dimensions and rounded once; the entries are then added. A blank dimension column is one that does not apply to the item and is left out of the product, not taken as a zero.</p>
+          <p><strong>Amounts</strong> are held to the minor unit. An item's value is its quantity up to date at its rate, rounded once; what the bill claims is that figure less the figure the previous bill was certified at. Every deduction is a percentage of a cumulative figure, rounded once, less what was deducted before. That is what makes the bills add up to the account exactly.</p>
+          <p><strong>A certified bill is frozen.</strong> The next bill subtracts the figures it was certified at, not figures recomputed from today's rates. So a rate corrected after a bill was certified shows up as a difference in the <em>next</em> bill &mdash; which is where a running account puts it. Only the last bill can be reopened, because every bill after it subtracts its figures.</p>
+          <p><strong>The contract value</strong> is the figure you enter; left blank, the total of the bill of quantities stands in for it. Extra items are excluded from it, because an extra item is by definition outside the contract that was signed.</p>
+          <p><strong>Tax on the supply</strong> is charged on the whole value of work done, including the part being retained, because retention withheld is still part of the consideration. Set the rate to zero where the client pays the tax directly or the contractor is not registered.</p>
+          <p><strong>Income-tax deduction at source</strong> defaults to the whole value of work certified in the bill, excluding the tax charged on it. The alternative base &mdash; value of work less the advance recovered &mdash; is offered for a contract where tax was already deducted when the advance was paid, so deducting again on the part being recouped would deduct twice. Which applies is a question for the deductor, the contract and your tax adviser, not for this tool. The tool applies no threshold: section 194C(5) and the section 51 contract-value threshold are stated on the page for you to read against your own contract.</p>
+          <p><strong>Deduction out of the tax on the supply</strong> &mdash; GST TDS under section 51, or creditable withholding VAT in the Philippines &mdash; is off until you switch it on, because it applies only to some clients and some contracts.</p>
+          <p><strong>What the tool does not do.</strong> It computes no price escalation, no secured advance on materials at site, no interest, no liquidated damages and no labour cess. It does not decide place of supply, does not file anything, and issues no certificate of deduction. Those belong in the contract and in your accounts.</p>
+          <p><strong>Dates.</strong> A defect-liability period runs in whole calendar months from the final bill, holding the day of the month where it can and falling back to the last day of the month where it cannot &mdash; so twelve months from 29 February 2024 is 28 February 2025, and one month from 31 January is the last day of February. A payment period runs in days. Both are tested on the month-end and leap-year cases.</p>
+        </details>
+
+        <div class="note">This is a bill preparer and a calculator &mdash; not advice, not a certificate of payment, and not a filing. It works figures out from the bill of quantities and the measurements you record; it cannot know what you did not measure, and it cannot know what your contract says. Check every quantity against the measurement book, every rate against the agreement, and every deduction rate against the agreement and the current tax law or your own adviser, before the bill leaves your hands.</div>
+
+        <h2>Licence</h2>
+        <p>MIT licensed, free forever, and open to read line by line &mdash; including the rules it applies, which live in one small package whose tests cover the first bill, the second bill, a quantity revised downwards, an item deducted in full, a rate corrected after certification, the retention ceiling, and a final bill that reconciles to the whole account.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span>Open MSME &middot; open-source tool for MSMEs in India &amp; the Philippines &middot; MIT</span>
+      <span><a href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a></span>
+    </div>
+  </footer>
+
+  <script src="assets/ui.js"></script>
+</body>
+</html>
